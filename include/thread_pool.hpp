@@ -15,7 +15,8 @@ public:
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool& operator=(const ThreadPool&) = delete;
 
-    void submit(std::function<void()> task);
+    bool submit(std::function<void()> task);
+    void shutdown(bool drain = true);
 
 private:
     void worker_loop();

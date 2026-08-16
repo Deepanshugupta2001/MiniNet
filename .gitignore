@@ -1,2 +1,2 @@
 # CMake-generated build output is machine-specific.
-build/
+build*/

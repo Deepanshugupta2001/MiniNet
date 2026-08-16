@@ -13,9 +13,18 @@ ThreadPool::ThreadPool(std::size_t worker_count) {
 }
 
 ThreadPool::~ThreadPool() {
+    shutdown(true);
+}
+
+void ThreadPool::shutdown(bool drain) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        if (stopping_) return;
         stopping_ = true;
+        if (!drain) {
+            std::queue<std::function<void()>> empty;
+            tasks_.swap(empty);
+        }
     }
     ready_.notify_all();
     for (auto& worker : workers_) {
@@ -23,15 +32,16 @@ ThreadPool::~ThreadPool() {
     }
 }
 
-void ThreadPool::submit(std::function<void()> task) {
+bool ThreadPool::submit(std::function<void()> task) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (stopping_) {
-            throw std::runtime_error("cannot submit work to a stopped thread pool");
+            return false;
         }
         tasks_.push(std::move(task));
     }
     ready_.notify_one();
+    return true;
 }
 
 void ThreadPool::worker_loop() {
