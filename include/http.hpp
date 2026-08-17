@@ -27,9 +27,6 @@ struct HttpResponse {
     std::map<std::string, std::string> headers;
 };
 
-using Request = HttpRequest;
-using Response = HttpResponse;
-
 ParseResult parse_request(const std::string& request_head);
 std::string serialize_response(const HttpResponse& response);
 

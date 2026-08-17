@@ -31,7 +31,7 @@ bool send_all(int fd, const std::string& data) {
     return true;
 }
 
-http::Response error_response(int status, const std::string& reason, const std::string& body, bool include_body) {
+http::HttpResponse error_response(int status, const std::string& reason, const std::string& body, bool include_body) {
     return {status, reason, body, "text/plain; charset=utf-8", include_body, {}};
 }
 
@@ -163,7 +163,7 @@ void HttpServer::handle_client(int client_fd) {
         return;
     }
     const bool is_head = parsed.request.method == "HEAD";
-    http::Response response;
+    http::HttpResponse response;
     if (parsed.request.method != "GET" && !is_head) {
         response = error_response(405, "Method Not Allowed", "Only GET and HEAD are supported\n", true);
         response.headers.emplace("Allow", "GET, HEAD");

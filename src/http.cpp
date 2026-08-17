@@ -67,7 +67,7 @@ ParseResult parse_request(const std::string& request_head) {
     return result;
 }
 
-std::string serialize_response(const Response& response) {
+std::string serialize_response(const HttpResponse& response) {
     std::ostringstream output;
     output << "HTTP/1.1 " << response.status << ' ' << response.reason << "\r\n"
            << "Content-Type: " << response.content_type << "\r\n"

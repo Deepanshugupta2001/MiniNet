@@ -8,17 +8,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(MININET_ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(MININET_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 
-add_executable(mininet
-    src/main.cpp
+add_library(mininet_core STATIC
     src/http.cpp
     src/http_server_v2.cpp
     src/thread_pool.cpp
 )
 
-target_include_directories(mininet PRIVATE include)
-target_compile_options(mininet PRIVATE -Wall -Wextra -Wpedantic)
 find_package(Threads REQUIRED)
-target_link_libraries(mininet PRIVATE Threads::Threads)
+target_include_directories(mininet_core PUBLIC include)
+target_compile_options(mininet_core PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(mininet_core PUBLIC Threads::Threads)
 
 function(enable_sanitizers target)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
@@ -33,19 +32,17 @@ function(enable_sanitizers target)
     endif()
 endfunction()
 
+add_executable(mininet src/main.cpp)
+target_link_libraries(mininet PRIVATE mininet_core)
+
+enable_sanitizers(mininet_core)
 enable_sanitizers(mininet)
 
 include(CTest)
 if(BUILD_TESTING)
-    add_executable(mininet_tests
-        tests/http_tests.cpp
-        src/http.cpp
-        src/http_server_v2.cpp
-        src/thread_pool.cpp
-    )
-    target_include_directories(mininet_tests PRIVATE include)
+    add_executable(mininet_tests tests/http_tests.cpp)
     target_compile_options(mininet_tests PRIVATE -Wall -Wextra -Wpedantic)
-    target_link_libraries(mininet_tests PRIVATE Threads::Threads)
+    target_link_libraries(mininet_tests PRIVATE mininet_core)
     enable_sanitizers(mininet_tests)
     add_test(NAME mininet_tests COMMAND mininet_tests)
 endif()
